@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+	<meta http-equiv="Content-Security-Policy" Content="script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval';">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionnaire de Comptes</title>
+    <style>
+        body {
+            background-color: lightgray;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            width: 250px;
+            margin: 0 auto;
+            padding-top: 5px;
+        }
+        .account-list {
+            width: 230px;
+            height: auto;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: white;
+        }
+        .account-list-item {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        .account-list-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <script src="app.js"></script>
+    <div class="container">
+        <div class="account-list" id="accountList">
+            <!-- Les éléments de la liste de comptes seront ajoutés ici -->
+        </div>
+    </div>
+</body>
+</html>
