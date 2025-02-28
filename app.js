@@ -1,55 +1,103 @@
 document.addEventListener("DOMContentLoaded", function () {
-    fetch("http://localhost:19755/")
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.text(); // Récupérer le texte de la réponse
-        })
-        .then(text => {
-            console.log("Received from server:", text);
+	chrome.storage.local.get("serverIP",function (data) {
+		const serverIp = data.serverIP;
+		console.log(serverIp);
+		const serverUrl = `http://${serverIp}:19755/`;
+		fetch(serverUrl)
+			.then(response => {
+				if (!response.ok) {
+					throw new Error('Network response was not ok');
+				}
+				return response.json(); // Récupérer le texte de la réponse
+			})
+			.then(data => {
+				console.log("Received from server:", data);
+			
+				//Verifications des données
+				if (!data.Accounts || !data.Folder){
+					console.error("données manquantes:", data);
+					return;
+				}
 
-            // Supposer que le serveur renvoie une liste d'URIs OTP séparés par des sauts de ligne
-            const uris = text.trim().split('\n').filter(uri => uri.trim() !== '');
+				// Supposer que le serveur renvoie une liste d'URIs OTP séparés par des sauts de ligne
+				const uris = data.Accounts.split('\n').filter(uri => uri.trim() !== '');
+				const folders = data.Folder.split('\n').filter(folder => folder.trim() !== '');
 
-            const parsedAccounts = uris.map(uri => parseOTPAuthUri(uri));
+				console.log("Parsed URIs:", uris);
+				console.log("Parsedfolders:", folders);
 
-            const accountListDiv = document.getElementById('accountList');
-            accountListDiv.innerHTML = ''; // Vider les comptes précédents
+				// Associer chaque compte à un dossier en fonction de l'ordre
+				const accountsByFolder = {};
+				uris.forEach((uri, index) => {
+					const folder = folders[index] || "Uncategorized";
+					if (!accountsByFolder[folder]) {
+						accountsByFolder[folder] = [];
+					}
+					const parsedAccount = parseOTPAuthUri(uri);
+					console.log(`Account for folder "${folder}":`, parsedAccount);
+					accountsByFolder[folder].push(parseOTPAuthUri(uri));
+				});
 
-            // Fonction pour générer le TOTP et mettre à jour l'interface utilisateur
-            const generateAndDisplayTOTP = async (account) => {
-                try {
-                    const otp = await generateTOTP(account.secret);
-                    const accountItem = document.createElement('div');
-                    accountItem.classList.add('account-list-item');
-                    
-					const accountLabel = document.createElement('span');
-					accountLabel.textContent = `${account.label}: ${otp}`;
+				const folderListDiv = document.getElementById('folderList');
+				const accountListDiv = document.getElementById('accountList');
+				console.log("folderListDiv:", folderListDiv);
+				folderListDiv.innerHTML = ''; //Vider les dossier précedents
+				accountListDiv.innerHTML = ''; // Vider les comptes précédents
+
+				//Afficher la liste des dossier cliquables
+				console.log("accountsByFolder:", accountsByFolder);
+				
+				Object.keys(accountsByFolder).forEach(folder => {
+					const folderItem = document.createElement('div');
+					folderItem.classList.add('folder-list-item');
+					folderItem.textContent = folder;
 					
-					const copyButton = document.createElement('button');
-					copyButton.classList.add('copy-Button');
-					copyButton.textContent = 'Copier';
-					
-					copyButton.addEventListener('click',() => {
-						navigator.clipboard.writeText(otp);
+					//Lorsque l'utilisateur clique sur un dossier
+					folderItem.addEventListener('click', () => {
+						displayAccounts(accountsByFolder[folder]);
 					});
 					
-					accountItem.appendChild(accountLabel);
-					accountItem.appendChild(copyButton);
-					accountListDiv.appendChild(accountItem);
-                } catch (error) {
-                    console.error('Error generating TOTP:', error);
-                }
-            };
+					folderListDiv.appendChild(folderItem);
+				});
 
-            // Pour chaque compte analysé, générer le TOTP et afficher dans l'UI
-            parsedAccounts.forEach(account => {
-                generateAndDisplayTOTP(account);
-            });
-        })
-        .catch(error => console.error("Error:", error));
-});
+				//Fonction pour afficher les comptes associés à un dossier
+				const displayAccounts = (accounts) => {
+					accountListDiv.innerHTML = '';
+					
+					accounts.forEach(account => {
+						generateAndDisplayTOTP(account);
+					});
+				};
+				
+				// Fonction pour générer le TOTP et mettre à jour l'interface utilisateur
+				const generateAndDisplayTOTP = async (account) => {
+					try {
+						const otp = await generateTOTP(account.secret);
+						const accountItem = document.createElement('div');
+						accountItem.classList.add('account-list-item');
+						
+						const accountLabel = document.createElement('span');
+						accountLabel.textContent = `${account.label}: ${otp}`;
+						
+						const copyButton = document.createElement('button');
+						copyButton.classList.add('copy-Button');
+						copyButton.textContent = 'Copier';
+						
+						copyButton.addEventListener('click',() => {
+							navigator.clipboard.writeText(otp);
+						});
+						
+						accountItem.appendChild(accountLabel);
+						accountItem.appendChild(copyButton);
+						accountListDiv.appendChild(accountItem);
+					} catch (error) {
+						console.error('Error generating TOTP:', error);
+					}
+				};
+			})
+			.catch(error => console.error("Error:", error));
+		});
+	});
 
 function parseOTPAuthUri(uri) {
     const params = new URLSearchParams(uri.substring(uri.indexOf('?') + 1));

@@ -3,7 +3,7 @@
   "description": "Authenticator generates 2-Step Verification codes in your browser (StuAuthDesktop required)",
   "manifest_version": 2,
   "name": "StuAuthWeb",
-  "version": "1.1",
+  "version": "3.0",
   "icons": {
     "48": "icons/icon48.png"
   },
@@ -13,6 +13,7 @@
   },
 
   "permissions": [
+	"storage",
 	"activeTab",
 	"tabs",
 	"clipboardWrite",
