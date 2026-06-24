@@ -1,36 +1,29 @@
 {
-
-  "description": "Authenticator generates 2-Step Verification codes in your browser (StuAuthDesktop required)",
+  "description": "Authenticator generates 2-Step Verification codes in your browser (StuAuthDesktop or StuAuthMobile required)",
   "manifest_version": 2,
   "name": "StuAuthWeb",
-  "version": "3.0",
+  "version": "3.21",
   "icons": {
     "48": "icons/icon48.png"
   },
-  
-  "background": {
-	"scripts": ["app.js"]
-  },
-
   "permissions": [
-	"storage",
-	"activeTab",
-	"tabs",
-	"clipboardWrite",
-	"webRequest",
-	"webRequestBlocking",
-	"http://localhost/",
-	"http://localhost:19755/"
+    "storage",
+    "clipboardWrite",
+    "http://*/*"
   ],
-
   "browser_action": {
     "default_icon": "icons/icon48.png",
-	"default_title": "StuAuthWeb",
-	"default_popup": "app.html"
+    "default_title": "StuAuthWeb",
+    "default_popup": "app.html"
   },
-  "applications":{
-	  "gecko":{
-		  "id": "StuAuthWeb@example.com"
-	  }
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "StuAuthWeb@example.com",
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
+    }
   }
 }

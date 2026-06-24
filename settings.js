@@ -1,29 +1,23 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
     const ipInput = document.getElementById("serverIp");
     const saveBtn = document.getElementById("saveBtn");
 
-    // Charger l'adresse IP stockée
-    chrome.storage.local.get("serverIP", function (data) {
-        if (data.serverIp) {
-            ipInput.value = data.serverIP;
+    chrome.storage.local.get("serverIP", (data) => {
+        if (typeof data.serverIP === "string" && data.serverIP.trim() !== "") {
+            ipInput.value = data.serverIP.trim();
         }
     });
 
-    // Sauvegarder la nouvelle adresse IP
-    saveBtn.addEventListener("click", function () {
+    saveBtn.addEventListener("click", () => {
         const newIp = ipInput.value.trim();
-        if (newIp) {
-            chrome.storage.local.set({ serverIP: newIp }, function () {
-                alert("Adresse IP sauvegardée !");
-            });
-        }
-    });
-	const serverIpInput = document.getElementById("serverIp");
 
-        // Récupérer l'IP stockée et la mettre en placeholder
-        chrome.storage.local.get("serverIP", function (data) {
-            if (data.serverIP) {
-                serverIpInput.placeholder = data.serverIP;
-            }
+        if (!newIp) {
+            alert("L'adresse IP ne peut pas être vide.");
+            return;
+        }
+
+        chrome.storage.local.set({ serverIP: newIp }, () => {
+            alert("Adresse IP sauvegardée !");
         });
+    });
 });
